@@ -71,10 +71,22 @@ def plot_monthly_overview(monthly):
         inkomsten = subset["inkomsten"].values
         uitgaven = subset["uitgaven"].values
 
-        ax.bar(x, inkomsten, width=width / 2, bottom=income_bottom,
-               label=f"In: {label}", color=label_colors[label])
-        ax.bar(x + width / 2, uitgaven, width=width / 2, bottom=expense_bottom,
-               label=f"Uit: {label}", color=label_colors[label])
+        ax.bar(
+            x,
+            inkomsten,
+            width=width / 2,
+            bottom=income_bottom,
+            label=f"In: {label}",
+            color=label_colors[label],
+        )
+        ax.bar(
+            x + width / 2,
+            uitgaven,
+            width=width / 2,
+            bottom=expense_bottom,
+            label=f"Uit: {label}",
+            color=label_colors[label],
+        )
 
         income_bottom += inkomsten
         expense_bottom += uitgaven
