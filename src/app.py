@@ -5,6 +5,7 @@ from analysis import (
     summarize_by_counterparty_per_month,
     summarize_monthly_totals_by_label,
 )
+import settings
 from visualization import (
     plot_counterparty_netto,
     plot_label_netto,
@@ -70,7 +71,7 @@ def main():
     init_db()
     st.title("Financieel Overzicht")
 
-    df = clean_transactions(load_csvs("data"))
+    df = clean_transactions(load_csvs(settings.DATA_DIR))
     summary_df = summarize_by_counterparty_per_month(df)
     summary_df["Maand_NL"] = summary_df["Maand"].apply(format_month)
     summary_df = summary_df.sort_values(by=["Maand", "Netto"], ascending=[True, False])
