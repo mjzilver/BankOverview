@@ -2,6 +2,8 @@ import pandas as pd
 import os
 from glob import glob
 
+from utils import format_zakelijk
+
 CSV_GLOB = "*.csv"
 DATE_COL = "Datum"
 AMOUNT_COL = "Bedrag"
@@ -32,4 +34,11 @@ def clean_transactions(df):
         df = df[~df[COUNTERPARTY_IBAN_COL].isin(own_ibans)]
 
     df["Maand"] = df[DATE_COL].dt.to_period("M")
+    return df
+
+
+def merge_and_clean_labels(summary_df, label_df):
+    df = summary_df.merge(label_df, on="Tegenpartij", how="left")
+    df["Label"] = df["Label"].fillna("").str.strip().replace("", "geen label")
+    df["Zakelijk_NL"] = df["Zakelijk"].apply(format_zakelijk)
     return df

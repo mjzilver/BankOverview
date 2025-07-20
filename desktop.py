@@ -28,7 +28,7 @@ def main():
             "src/app.py",
             "--browser.serverAddress=localhost",
             "--server.headless=true",
-            *(["--client.toolbarMode=none"] if not debug_mode else []),
+            *(["--client.toolbarMode=minimal"] if debug_mode else []),
             "--server.port=8501",
             "--server.enableCORS=false",
         ],

@@ -4,15 +4,17 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 
-def plot_counterparty_netto(filtered_df):
-    n_rows = len(filtered_df)
+def plot_horizontal_bar(df, value_col, category_col, title="", highlight=None):
+    df = df.copy()
+    df[category_col] = df[category_col].replace("", f"geen {category_col.lower()}")
+
+    df = df.sort_values(by=value_col, ascending=False)
+    n_rows = len(df)
     fig_height = max(4, n_rows * 0.1)
     fig, ax = plt.subplots(figsize=(8, fig_height))
 
-    colors = filtered_df["Netto"].apply(lambda x: "green" if x >= 0 else "red")
-    bars = ax.barh(
-        filtered_df["Tegenpartij"][::-1], filtered_df["Netto"][::-1], color=colors[::-1]
-    )
+    colors = df[value_col].apply(lambda x: "green" if x >= 0 else "red")
+    bars = ax.barh(df[category_col][::-1], df[value_col][::-1], color=colors[::-1])
 
     offset = 2
     for i, bar in enumerate(bars):
@@ -30,9 +32,9 @@ def plot_counterparty_netto(filtered_df):
             color="black",
         )
 
-        tegenpartij = filtered_df["Tegenpartij"].iloc[::-1].iloc[i]
+        cat_text = df[category_col].iloc[::-1].iloc[i]
         ax.annotate(
-            tegenpartij[:50],
+            cat_text[:50],
             xy=(0, y),
             xytext=(-offset if width >= 0 else offset, 0),
             textcoords="offset points",
@@ -45,67 +47,43 @@ def plot_counterparty_netto(filtered_df):
     ax.set_yticks([])
     for spine in ax.spines.values():
         spine.set_visible(False)
+    ax.set_title(title)
     plt.tight_layout()
     return fig
 
 
-def plot_label_netto(filtered_df):
-    filtered_df = filtered_df.copy()
-    filtered_df["Label"] = filtered_df["Label"].replace("", "geen label")
-
-    grouped = filtered_df.groupby("Label")
-    agg_df = grouped.agg(
-        Netto=("Netto", "sum"),
-        Positief=("Netto", lambda x: (x > 0).sum()),
-        Negatief=("Netto", lambda x: (x < 0).sum()),
-        Aantal=("Tegenpartij", "count"),
-    ).reset_index()
-    filtered_df = agg_df
-
-    filtered_df = filtered_df.sort_values(by="Netto", ascending=False)
-
-    n_rows = len(filtered_df)
-    fig_height = max(4, n_rows * 0.1)
-    fig, ax = plt.subplots(figsize=(8, fig_height))
-
-    colors = filtered_df["Netto"].apply(lambda x: "green" if x >= 0 else "red")
-    bars = ax.barh(
-        filtered_df["Label"][::-1], filtered_df["Netto"][::-1], color=colors[::-1]
+def plot_counterparty_netto(filtered_df, highlight=None):
+    return plot_horizontal_bar(
+        filtered_df,
+        value_col="Netto",
+        category_col="Tegenpartij",
+        title="Netto per Tegenpartij",
+        highlight=highlight,
     )
 
-    offset = 2
-    for i, bar in enumerate(bars):
-        width = bar.get_width()
-        y = bar.get_y() + bar.get_height() / 2
 
-        ax.annotate(
-            f"{width:,.2f}€",
-            xy=(width, y),
-            xytext=(offset if width >= 0 else -offset, 0),
-            textcoords="offset points",
-            ha="left" if width >= 0 else "right",
-            va="center",
-            fontsize=6,
-            color="black",
+def plot_label_netto(filtered_df, highlight=None):
+    df = filtered_df.copy()
+    df["Label"] = df["Label"].replace("", "geen label")
+
+    grouped = (
+        df.groupby("Label")
+        .agg(
+            Netto=("Netto", "sum"),
+            Positief=("Netto", lambda x: (x > 0).sum()),
+            Negatief=("Netto", lambda x: (x < 0).sum()),
+            Aantal=("Tegenpartij", "count"),
         )
+        .reset_index()
+    )
 
-        label_text = filtered_df["Label"].iloc[::-1].iloc[i]
-        ax.annotate(
-            label_text[:50],
-            xy=(0, y),
-            xytext=(-offset if width >= 0 else offset, 0),
-            textcoords="offset points",
-            ha="right" if width >= 0 else "left",
-            va="center",
-            fontsize=6,
-            color="black",
-        )
-
-    ax.set_yticks([])
-    for spine in ax.spines.values():
-        spine.set_visible(False)
-    plt.tight_layout()
-    return fig
+    return plot_horizontal_bar(
+        grouped,
+        value_col="Netto",
+        category_col="Label",
+        title="Netto per Label",
+        highlight=highlight,
+    )
 
 
 def plot_monthly_overview(monthly):
