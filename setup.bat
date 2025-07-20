@@ -11,7 +11,4 @@ if "%1"=="--build" (
     pyinstaller --onefile desktop.py --noconsole --name "Financieel Overzicht"
 )
 
-if "%1"=="--run" (
-    python desktop.py --debug
-)
-
+python desktop.py --debug

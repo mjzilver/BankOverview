@@ -1,3 +1,5 @@
+from matplotlib import cm
+from matplotlib.colors import to_hex
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -48,33 +50,39 @@ def plot_counterparty_netto(filtered_df):
 
 
 def plot_monthly_overview(monthly):
-    fig, ax = plt.subplots(figsize=(10, 4))
-    x = np.arange(len(monthly))
-    width = 0.25
+    fig, ax = plt.subplots(figsize=(12, 5))
 
-    ax.bar(
-        x - width, monthly["inkomsten"], width=width, label="Inkomsten", color="green"
-    )
-    ax.bar(x, monthly["uitgaven"].abs(), width=width, label="Uitgaven", color="red")
-    netto_bars = ax.bar(
-        x + width, monthly["netto"], width=width, label="Netto", color="blue"
-    )
+    months = monthly["Maand_NL"].unique()
+    labels = monthly["Label"].unique()
 
-    for bar in netto_bars:
-        height = bar.get_height()
-        ax.annotate(
-            f"{height:,.0f}€",
-            xy=(bar.get_x() + bar.get_width() / 2, height),
-            xytext=(0, 3 if height > 0 else -10),
-            textcoords="offset points",
-            ha="center",
-            va="bottom",
-            fontsize=8,
-            color="black",
-        )
+    x = np.arange(len(months))
+    width = 0.8
+
+    cmap = cm.get_cmap("tab20", len(labels))
+    label_colors = {label: to_hex(cmap(i)) for i, label in enumerate(labels)}
+
+    income_bottom = np.zeros(len(months))
+    expense_bottom = np.zeros(len(months))
+
+    for label in labels:
+        subset = monthly[monthly["Label"] == label]
+        subset = subset.set_index("Maand_NL").reindex(months, fill_value=0)
+
+        inkomsten = subset["inkomsten"].values
+        uitgaven = subset["uitgaven"].values
+
+        ax.bar(x, inkomsten, width=width / 2, bottom=income_bottom,
+               label=f"In: {label}", color=label_colors[label])
+        ax.bar(x + width / 2, uitgaven, width=width / 2, bottom=expense_bottom,
+               label=f"Uit: {label}", color=label_colors[label])
+
+        income_bottom += inkomsten
+        expense_bottom += uitgaven
 
     ax.set_ylabel("Bedrag (€)")
-    ax.set_xticks(x)
-    ax.set_xticklabels(monthly["Maand_NL"], rotation=45, ha="right")
-    ax.legend()
+    ax.set_xticks(x + width / 4)
+    ax.set_xticklabels(months, rotation=45, ha="right")
+    ax.legend(title="Labelkleur en soort", bbox_to_anchor=(1.05, 1), loc="upper left")
+    ax.set_title("Maandelijkse Inkomsten/Uitgaven per Label")
+    plt.tight_layout()
     return fig
