@@ -76,7 +76,7 @@ def plot_monthly_overview(monthly):
             inkomsten,
             width=width / 2,
             bottom=income_bottom,
-            label=f"In: {label}",
+            label=label,
             color=label_colors[label],
         )
         ax.bar(
@@ -84,7 +84,7 @@ def plot_monthly_overview(monthly):
             uitgaven,
             width=width / 2,
             bottom=expense_bottom,
-            label=f"Uit: {label}",
+            label=None,
             color=label_colors[label],
         )
 

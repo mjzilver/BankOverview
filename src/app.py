@@ -72,7 +72,7 @@ def main():
 
     with tab3:
         st.subheader("Tegenpartij Labels")
-        all_parties = sorted(summary_df["Tegenpartij"].unique())
+        all_parties = sorted(summary_df["Tegenpartij"].str.strip().unique())
         labels_df = get_labels()
 
         for tp in all_parties:
