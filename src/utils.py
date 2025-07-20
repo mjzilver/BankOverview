@@ -17,6 +17,7 @@ def format_month(period_str):
     ]
     return f"{dutch_months[int(month)]} {year}"
 
+
 def format_zakelijk(zakelijk):
     if zakelijk is True or zakelijk == 1:
         return "Zakelijk"

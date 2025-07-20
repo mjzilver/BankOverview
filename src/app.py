@@ -7,7 +7,11 @@ from analysis import (
     summarize_monthly_totals,
     summarize_monthly_totals_by_label,
 )
-from visualization import plot_counterparty_netto, plot_label_netto, plot_monthly_overview
+from visualization import (
+    plot_counterparty_netto,
+    plot_label_netto,
+    plot_monthly_overview,
+)
 from utils import format_month, format_zakelijk
 from label_db import get_labels, save_label, init_db
 
@@ -25,14 +29,15 @@ def main():
 
     label_df = get_labels()
     summary_df = summary_df.merge(label_df, on="Tegenpartij", how="left")
+    summary_df["Label"] = summary_df["Label"].fillna("").str.strip()
+    summary_df["Label"] = summary_df["Label"].replace("", "geen label")
     summary_df["Zakelijk_NL"] = summary_df["Zakelijk"].apply(format_zakelijk)
-    summary_df["Label_NL"] = summary_df["Label"].replace("", "geen label")
 
     months = summary_df.drop_duplicates("Maand")[["Maand", "Maand_NL"]].sort_values(
         "Maand"
     )
     month_names = months["Maand_NL"].tolist()
-    
+
     selected_month = st.selectbox("Filter op maand", ["Alle maanden"] + month_names)
 
     if selected_month == "Alle maanden":
@@ -53,16 +58,19 @@ def main():
     with table_tab2:
         st.subheader(f"Netto per label voor {selected_month}")
         grouped = (
-            filtered_df.groupby(["Label_NL", "Zakelijk_NL"], as_index=False)["Netto"]
+            filtered_df.groupby(["Label", "Zakelijk_NL"], as_index=False)["Netto"]
             .sum()
             .sort_values(by="Netto", ascending=False)
         )
-        st.dataframe(
-            grouped.style.format({"Netto": "{:,.2f}"})
-        )
+        st.dataframe(grouped.style.format({"Netto": "{:,.2f}"}))
 
     tab1, tab2, tab3, tab4 = st.tabs(
-        ["Per Tegenpartij", "Per label", "Maandelijkse Samenvatting", "Tegenpartij Labels"]
+        [
+            "Per Tegenpartij",
+            "Per label",
+            "Maandelijkse Samenvatting",
+            "Tegenpartij Labels",
+        ]
     )
 
     with tab1:
@@ -73,16 +81,14 @@ def main():
             st.info(
                 "Selecteer een specifieke maand om de grafiek per tegenpartij te zien."
             )
-            
+
     with tab2:
         if selected_month != "Alle maanden":
             fig = plot_label_netto(filtered_df)
             st.pyplot(fig)
         else:
-            st.info(
-                "Selecteer een specifieke maand om de grafiek per label te zien."
-            )
-        
+            st.info("Selecteer een specifieke maand om de grafiek per label te zien.")
+
     with tab3:
         zakelijkheid = st.selectbox(
             "Filter op zakelijkheid", ["Alle", "Zakelijk", "Niet-zakelijk"], index=0

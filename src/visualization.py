@@ -52,7 +52,6 @@ def plot_counterparty_netto(filtered_df):
 def plot_label_netto(filtered_df):
     filtered_df = filtered_df.copy()
     filtered_df["Label"] = filtered_df["Label"].replace("", "geen label")
-    filtered_df = filtered_df.sort_values(by=["Label", "Netto"], ascending=[True, False])
 
     grouped = filtered_df.groupby("Label")
     agg_df = grouped.agg(
@@ -62,7 +61,9 @@ def plot_label_netto(filtered_df):
         Aantal=("Tegenpartij", "count"),
     ).reset_index()
     filtered_df = agg_df
-    
+
+    filtered_df = filtered_df.sort_values(by="Netto", ascending=False)
+
     n_rows = len(filtered_df)
     fig_height = max(4, n_rows * 0.1)
     fig, ax = plt.subplots(figsize=(8, fig_height))
@@ -109,12 +110,12 @@ def plot_label_netto(filtered_df):
 
 def plot_monthly_overview(monthly):
     fig, ax = plt.subplots(figsize=(12, 5))
-    
+
     monthly["Label"] = monthly["Label"].replace("", "geen label")
 
     months = monthly["Maand_NL"].unique()
     labels = monthly["Label"].unique()
-    
+
     x = np.arange(len(months))
     width = 0.8
 
@@ -149,14 +150,12 @@ def plot_monthly_overview(monthly):
             hatch="/",
         )
 
-
         income_bottom += inkomsten
         expense_bottom += uitgaven
-        
-        
+
     netto = income_bottom - expense_bottom
     total_bar = ax.bar(
-        x + width *2 / 3,
+        x + width * 2 / 3,
         netto,
         width=width / 3,
         color="gray",
@@ -181,5 +180,6 @@ def plot_monthly_overview(monthly):
     ax.set_xticklabels(months, rotation=45, ha="right")
     ax.legend(title="Labelkleur en soort", bbox_to_anchor=(1.05, 1), loc="upper left")
     ax.set_title("Maandelijkse Inkomsten/Uitgaven per Label")
+    ax.margins(y=0.1)
     plt.tight_layout()
     return fig
