@@ -12,10 +12,18 @@ CSV_GLOB = "*.csv"
 COMMON_COLS = {
     "date": "date",
     "amount": "Bedrag",
-    "counterparty": "Naam tegenpartij",
+    "counterparty": "Tegenpartij",
     "counterparty_iban": "iban tegenpartij",
     "iban": "iban",
     "month": "Maand",
+    "month_nl": "Maand_NL",
+    "label": "Label",
+    "business": "Zakelijk",
+    "not_business": "Niet-zakelijk",
+    "business_nl": "Zakelijk_NL",
+    "net_amount": "Netto",
+    "income": "Inkomsten",
+    "expense": "Uitgaven",
 }
 
 BANK_CONFIGS = {
@@ -145,7 +153,9 @@ def clean_transactions(df):
 
 
 def merge_and_clean_labels(summary_df, label_df):
-    df = summary_df.merge(label_df, on="Tegenpartij", how="left")
-    df["Label"] = df["Label"].fillna("").str.strip().replace("", "geen label")
-    df["Zakelijk_NL"] = df["Zakelijk"].apply(format_zakelijk)
+    df = summary_df.merge(label_df, on=COMMON_COLS["counterparty"], how="left")
+    df[COMMON_COLS["label"]] = (
+        df[COMMON_COLS["label"]].fillna("").str.strip().replace("", "geen label")
+    )
+    df[COMMON_COLS["business_nl"]] = df[COMMON_COLS["business"]].apply(format_zakelijk)
     return df

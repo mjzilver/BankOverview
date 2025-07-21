@@ -1,7 +1,5 @@
-def summarize_by_counterparty_per_month(
-    df, date_col="Maand", party_col="Naam tegenpartij", amount_col="Bedrag"
-):
-    monthly = df.groupby([date_col, party_col])[amount_col].sum().reset_index()
+def summarize_by_counterparty_per_month(df):
+    monthly = df.groupby(["Maand", "Tegenpartij"])["Bedrag"].sum().reset_index()
     monthly.columns = ["Maand", "Tegenpartij", "Netto"]
     monthly["Maand"] = monthly["Maand"].astype(str)
     return monthly
